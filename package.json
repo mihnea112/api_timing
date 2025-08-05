@@ -12,7 +12,8 @@
     "typescript": "^5.9.2"
   },
   "type": "module",
-  "scripts": {
-    "start": "NODE_NO_WARNINGS=1 ts-node-esm src/index.ts"
+ "scripts": {
+    "start": "node index.ts",
+    "server": "nodemon index.ts"
   }
 }
