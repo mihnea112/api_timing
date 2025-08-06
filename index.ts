@@ -103,6 +103,8 @@ app.get("/api/times", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 API server running at http://localhost:${PORT}`);
+const port = process.env.PORT || 3001;
+
+app.listen(port, () => {
+  console.log("Server started on port " + port);
 });
