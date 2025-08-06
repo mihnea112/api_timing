@@ -1,11 +1,19 @@
 import express from "express";
-import cors from 'cors';
+import cors from "cors";
 import bodyParser from "body-parser";
-import { db } from "./db.ts";
+import mysql from "mysql2/promise";
+
+export const db = mysql.createPool({
+  host: "sql.freedb.tech",
+  port: 3306,
+  user: "freedb_mihnea",
+  password: "FPvSGu!UqG6mryj",
+  database: "freedb_timing",
+});
 
 const app = express();
 
-app.use(cors()); 
+app.use(cors());
 const PORT = 3001;
 
 app.use(bodyParser.json());
@@ -69,25 +77,30 @@ app.patch("/api/time/:id/penalty_ms", async (req, res) => {
     res.status(500).json({ error: "DB update failed" });
   }
 });
-app.patch('/api/time/:id/stage', async (req, res) => {
+app.patch("/api/time/:id/stage", async (req, res) => {
   const { id } = req.params;
   const { stage } = req.body;
 
-  if (typeof stage !== 'number' || stage < 1 || stage > 2) {
-    return res.status(400).json({ error: 'Invalid stage number. Must be 1 or 2.' });
+  if (typeof stage !== "number" || stage < 1 || stage > 2) {
+    return res
+      .status(400)
+      .json({ error: "Invalid stage number. Must be 1 or 2." });
   }
 
   try {
-    const [result] = await db.query('UPDATE time_logs SET stage = ? WHERE id = ?', [stage, id]);
-    
+    const [result] = await db.query(
+      "UPDATE time_logs SET stage = ? WHERE id = ?",
+      [stage, id]
+    );
+
     if ((result as any).affectedRows === 0) {
-      return res.status(404).json({ error: 'Time entry not found.' });
+      return res.status(404).json({ error: "Time entry not found." });
     }
 
-    res.status(200).json({ message: 'Stage updated successfully.' });
+    res.status(200).json({ message: "Stage updated successfully." });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Database error.' });
+    res.status(500).json({ error: "Database error." });
   }
 });
 
