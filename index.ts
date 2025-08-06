@@ -2,13 +2,15 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import mysql from "mysql2/promise";
+import dotenv from "dotenv";
+dotenv.config();
 
 export const db = mysql.createPool({
-  host: "sql.freedb.tech",
-  port: 3306,
-  user: "freedb_mihnea",
-  password: "FPvSGu!UqG6mryj",
-  database: "freedb_timing",
+  host: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT),
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
 });
 
 const app = express();
