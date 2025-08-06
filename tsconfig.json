@@ -1,19 +1,18 @@
 {
   "compilerOptions": {
-      "module": "commonjs",
-      "esModuleInterop": true,
-      "allowSyntheticDefaultImports": true,
-      "noEmit": true,
-      "allowImportingTsExtensions": true,
-      "target": "es6",
-      "noImplicitAny": true,
-      "moduleResolution": "node",
-      "sourceMap": true,
-      "outDir": "dist",
-      "baseUrl": ".",
-      "paths": {
-          "*": ["node_modules/*"]
-      }
+    "module": "ESNext",               // Use ES modules for Node 18+ and Vercel ESM support
+    "target": "ES2020",               // Modern JS features supported in Node 18+
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,                  // More strict typing, optional but recommended
+    "noEmit": false,                 // Enable emitting compiled JS files
+    "outDir": "dist",
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "*": ["node_modules/*"]
+    }
   },
-  "include": ["./**/*"]
-  }
+  "include": ["src/**/*"]
+}
