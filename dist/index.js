@@ -17,12 +17,14 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const promise_1 = __importDefault(require("mysql2/promise"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 exports.db = promise_1.default.createPool({
-    host: "sql.freedb.tech",
-    port: 3306,
-    user: "freedb_mihnea",
-    password: "FPvSGu!UqG6mryj",
-    database: "freedb_timing",
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
 });
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
@@ -113,4 +115,5 @@ const port = process.env.PORT || 3001;
 app.listen(port, () => {
     console.log("Server started on port " + port);
 });
+exports.default = app;
 //# sourceMappingURL=index.js.map
