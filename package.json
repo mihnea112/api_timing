@@ -13,7 +13,6 @@
   },
   "type": "module",
  "scripts": {
-    "start": "node index.ts",
-    "server": "nodemon index.ts"
+    "start": "node ./src/index.ts"
   }
 }
