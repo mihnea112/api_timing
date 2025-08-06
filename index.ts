@@ -11,6 +11,7 @@ export const db = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
+  socketPath: '/Applications/MAMP/tmp/mysql/mysql.sock',
 });
 
 const app = express();
