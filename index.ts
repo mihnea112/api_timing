@@ -1,33 +1,27 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import cors from 'cors';
 import bodyParser from "body-parser";
-import { db } from "./db"; 
-
-interface InsertResult {
-  insertId: number;
-  affectedRows?: number;
-}
+import { db } from "./db.ts";
 
 const app = express();
 
 app.use(cors()); 
 const PORT = 3001;
 
-app.use(express.json());
+app.use(bodyParser.json());
 
 // POST /api/time - Create new time
-app.post("/api/time", async (req: Request, res: Response) => {
+app.post("/api/time", async (req, res) => {
   const { time_ms } = req.body;
   if (typeof time_ms !== "number") {
     return res.status(400).json({ error: "Missing or invalid time_ms" });
   }
 
   try {
-    const dbResult = await db.execute(
+    const [result]: any = await db.execute(
       "INSERT INTO time_logs (time_ms) VALUES (?)",
       [time_ms]
     );
-    const result = dbResult[0] as InsertResult;
     const insertId = result.insertId;
 
     res.status(201).json({ message: "Time saved", id: insertId });
@@ -37,7 +31,7 @@ app.post("/api/time", async (req: Request, res: Response) => {
 });
 
 // PATCH /api/time/:id/car - Set car number
-app.patch("/api/time/:id/car_number", async (req: Request, res: Response) => {
+app.patch("/api/time/:id/car_number", async (req, res) => {
   const { id } = req.params;
   const { car_number } = req.body;
 
@@ -57,7 +51,7 @@ app.patch("/api/time/:id/car_number", async (req: Request, res: Response) => {
 });
 
 // PATCH /api/time/:id/penalty - Set penalty
-app.patch("/api/time/:id/penalty_ms", async (req: Request, res: Response) => {
+app.patch("/api/time/:id/penalty_ms", async (req, res) => {
   const { id } = req.params;
   const { penalty_ms } = req.body;
 
@@ -75,7 +69,7 @@ app.patch("/api/time/:id/penalty_ms", async (req: Request, res: Response) => {
     res.status(500).json({ error: "DB update failed" });
   }
 });
-app.patch('/api/time/:id/stage', async (req: Request, res: Response) => {
+app.patch('/api/time/:id/stage', async (req, res) => {
   const { id } = req.params;
   const { stage } = req.body;
 
@@ -84,10 +78,9 @@ app.patch('/api/time/:id/stage', async (req: Request, res: Response) => {
   }
 
   try {
-    const dbResult = await db.query('UPDATE time_logs SET stage = ? WHERE id = ?', [stage, id]);
-    const result = dbResult[0] as InsertResult;
+    const [result] = await db.query('UPDATE time_logs SET stage = ? WHERE id = ?', [stage, id]);
     
-    if (result.affectedRows === 0) {
+    if ((result as any).affectedRows === 0) {
       return res.status(404).json({ error: 'Time entry not found.' });
     }
 
@@ -98,7 +91,7 @@ app.patch('/api/time/:id/stage', async (req: Request, res: Response) => {
   }
 });
 
-app.get("/api/times", async (req: Request, res: Response) => {
+app.get("/api/times", async (req, res) => {
   try {
     const [rows] = await db.execute(
       "SELECT * FROM time_logs ORDER BY created_at DESC"
@@ -108,10 +101,6 @@ app.get("/api/times", async (req: Request, res: Response) => {
     console.error(err);
     res.status(500).json({ error: "DB read error" });
   }
-});
-
-app.use((req: Request, res: Response) => {
-  res.status(404).json({ error: "Route not found" });
 });
 
 app.listen(PORT, () => {
