@@ -117,6 +117,73 @@ app.get("/api/times", async (req, res) => {
     res.status(500).json({ error: "DB read error" });
   }
 });
+app.get("/api/racers", async (req, res) => {
+  try {
+    const [rows] = await db.execute(
+      "SELECT * FROM racers ORDER BY category, car_number"
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "DB read error" });
+  }
+});
+
+// POST /api/racers - add new racer
+app.post("/api/racers", async (req, res) => {
+  const { name, car_number, category } = req.body;
+  if (!name || !car_number || !category) {
+    console.log(name, car_number, category);
+    return res.status(400).json({ error: "Missing fields" });
+  }
+
+  try {
+    const [result]: any = await db.execute(
+      "INSERT INTO racers (name, car_number, category) VALUES (?, ?, ?)",
+      [name, car_number, category]
+    );
+    res.status(201).json({ id: result.insertId, name, car_number, category });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "DB insert failed" });
+  }
+});
+
+// DELETE /api/racers/:id - remove racer
+app.delete("/api/racers/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [result]: any = await db.execute("DELETE FROM racers WHERE id = ?", [
+      id,
+    ]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Racer not found" });
+    }
+    res.sendStatus(204);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "DB delete failed" });
+  }
+});
+
+// (optional) PUT /api/racers/:id - update racer info
+app.put("/api/racers/:id", async (req, res) => {
+  const { id } = req.params;
+  const { name, carNumber, category } = req.body;
+  try {
+    const [result]: any = await db.execute(
+      "UPDATE racers SET name = ?, car_number = ?, category = ? WHERE id = ?",
+      [name, carNumber, category, id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Racer not found" });
+    }
+    res.json({ id, name, carNumber, category });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "DB update failed" });
+  }
+});
 
 const port = process.env.PORT || 3001;
 
