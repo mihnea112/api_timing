@@ -40,21 +40,21 @@ app.post("/api/time", async (req, res) => {
   }
 });
 
-// PATCH /api/time/:id/car - Set car number
-app.patch("/api/time/:id/car_number", async (req, res) => {
+// PATCH /api/time/:id/racer - Set racer_id
+app.patch("/api/time/:id/racer", async (req, res) => {
   const { id } = req.params;
-  const { car_number } = req.body;
+  const { racer_id } = req.body;
 
-  if (typeof car_number !== "number") {
-    return res.status(400).json({ error: "Invalid car_number" });
+  if (typeof racer_id !== "number") {
+    return res.status(400).json({ error: "Invalid racer_id" });
   }
 
   try {
-    await db.execute("UPDATE time_logs SET car_number = ? WHERE id = ?", [
-      car_number,
+    await db.execute("UPDATE time_logs SET racer_id = ? WHERE id = ?", [
+      racer_id,
       id,
     ]);
-    res.json({ message: "Car number updated" });
+    res.json({ message: "Racer updated" });
   } catch (err) {
     res.status(500).json({ error: "DB update failed" });
   }
@@ -109,7 +109,10 @@ app.patch("/api/time/:id/stage", async (req, res) => {
 app.get("/api/times", async (req, res) => {
   try {
     const [rows] = await db.execute(
-      "SELECT * FROM time_logs ORDER BY created_at DESC"
+      `SELECT t.*, r.name AS racer_name, r.car_number, r.category
+       FROM time_logs t
+       LEFT JOIN racers r ON t.racer_id = r.id
+       ORDER BY t.created_at DESC`
     );
     res.json(rows);
   } catch (err) {
@@ -133,8 +136,8 @@ app.get("/api/racers", async (req, res) => {
 app.post("/api/racers", async (req, res) => {
   const { name, car_number, category } = req.body;
   if (!name || !car_number || !category) {
-    console.log(name, car_number, category);
     return res.status(400).json({ error: "Missing fields" });
+
   }
 
   try {
