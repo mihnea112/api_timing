@@ -106,6 +106,31 @@ app.patch("/api/time/:id/stage", async (req, res) => {
   }
 });
 
+app.patch("/api/racers/:racerId/abandon", async (req, res) => {
+  const { racerId } = req.params;
+  const { stage } = req.body;
+
+  if (typeof stage !== "number" || (stage !== 1 && stage !== 2)) {
+    return res.status(400).json({ error: "Invalid stage number. Must be 1 or 2." });
+  }
+
+  try {
+    const [result] = await db.query(
+      "UPDATE time_logs SET time_ms = 540000 WHERE racer_id = ? AND stage = ?",
+      [racerId, stage]
+    );
+
+    if ((result as any).affectedRows === 0) {
+      return res.status(404).json({ error: "No matching time log found for racer and stage." });
+    }
+
+    res.status(200).json({ message: "Stage abandoned for racer. Time set to 540000 ms." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error." });
+  }
+});
+
 app.get("/api/times", async (req, res) => {
   try {
     const [rows] = await db.execute(
@@ -137,7 +162,6 @@ app.post("/api/racers", async (req, res) => {
   const { name, car_number, category } = req.body;
   if (!name || !car_number || !category) {
     return res.status(400).json({ error: "Missing fields" });
-
   }
 
   try {
