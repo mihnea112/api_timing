@@ -101,32 +101,6 @@ app.patch("/api/time/:id/stage", (req, res) => __awaiter(void 0, void 0, void 0,
         res.status(500).json({ error: "Database error." });
     }
 }));
-// PATCH /api/time/:id/abandon - Abandon a stage (set time_ms = 540000)
-app.patch("/api/time/:id/abandon", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
-    const { stage } = req.body;
-    if (typeof stage !== "number" || (stage !== 1 && stage !== 2)) {
-        return res
-            .status(400)
-            .json({ error: "Invalid stage number. Must be 1 or 2." });
-    }
-    try {
-        // Set time_ms to 540000 for this time log and stage.
-        const [result] = yield exports.db.query("UPDATE time_logs SET time_ms = 540000 WHERE id = ? AND stage = ?", [id, stage]);
-        if (result.affectedRows === 0) {
-            return res
-                .status(404)
-                .json({ error: "Time entry not found for given id and stage." });
-        }
-        res
-            .status(200)
-            .json({ message: "Stage abandoned. Time set to 540000 ms." });
-    }
-    catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Database error." });
-    }
-}));
 app.patch("/api/racers/:racerId/abandon", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { racerId } = req.params;
     const { stage } = req.body;
@@ -160,7 +134,7 @@ app.get("/api/times", (req, res) => __awaiter(void 0, void 0, void 0, function* 
 }));
 app.get("/api/racers", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const [rows] = yield exports.db.execute("SELECT * FROM racers ORDER BY category, car_number");
+        const [rows] = yield exports.db.execute("SELECT * FROM racers ORDER BY category, CAST(car_number AS UNSIGNED)");
         res.json(rows);
     }
     catch (err) {
@@ -174,6 +148,7 @@ app.post("/api/racers", (req, res) => __awaiter(void 0, void 0, void 0, function
     if (!name || !car_number || !category) {
         return res.status(400).json({ error: "Missing fields" });
     }
+    console.log("Adding racer:", { name, car_number, category });
     try {
         const [result] = yield exports.db.execute("INSERT INTO racers (name, car_number, category) VALUES (?, ?, ?)", [name, car_number, category]);
         res.status(201).json({ id: result.insertId, name, car_number, category });
@@ -203,13 +178,13 @@ app.delete("/api/racers/:id", (req, res) => __awaiter(void 0, void 0, void 0, fu
 // (optional) PUT /api/racers/:id - update racer info
 app.put("/api/racers/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    const { name, carNumber, category } = req.body;
+    const { name, car_number, category } = req.body;
     try {
-        const [result] = yield exports.db.execute("UPDATE racers SET name = ?, car_number = ?, category = ? WHERE id = ?", [name, carNumber, category, id]);
+        const [result] = yield exports.db.execute("UPDATE racers SET name = ?, car_number = ?, category = ? WHERE id = ?", [name, car_number, category, id]);
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: "Racer not found" });
         }
-        res.json({ id, name, carNumber, category });
+        res.json({ id, name, car_number, category });
     }
     catch (err) {
         console.error(err);

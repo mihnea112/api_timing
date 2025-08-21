@@ -148,7 +148,7 @@ app.get("/api/times", async (req, res) => {
 app.get("/api/racers", async (req, res) => {
   try {
     const [rows] = await db.execute(
-      "SELECT * FROM racers ORDER BY category, car_number"
+      "SELECT * FROM racers ORDER BY category, CAST(car_number AS UNSIGNED)"
     );
     res.json(rows);
   } catch (err) {
@@ -163,7 +163,7 @@ app.post("/api/racers", async (req, res) => {
   if (!name || !car_number || !category) {
     return res.status(400).json({ error: "Missing fields" });
   }
-
+  console.log("Adding racer:", { name, car_number, category });
   try {
     const [result]: any = await db.execute(
       "INSERT INTO racers (name, car_number, category) VALUES (?, ?, ?)",
@@ -196,16 +196,16 @@ app.delete("/api/racers/:id", async (req, res) => {
 // (optional) PUT /api/racers/:id - update racer info
 app.put("/api/racers/:id", async (req, res) => {
   const { id } = req.params;
-  const { name, carNumber, category } = req.body;
+  const { name, car_number, category } = req.body;
   try {
     const [result]: any = await db.execute(
       "UPDATE racers SET name = ?, car_number = ?, category = ? WHERE id = ?",
-      [name, carNumber, category, id]
+      [name, car_number, category, id]
     );
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: "Racer not found" });
     }
-    res.json({ id, name, carNumber, category });
+    res.json({ id, name, car_number, category });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "DB update failed" });
